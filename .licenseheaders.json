@@ -1,0 +1,13 @@
+{
+    "paths": ["src/**/*.rs", "**/*.sh"],
+    "exclude": ["**/dist/**", "**/build/**", "**/target/**"],
+    "extensions": [".rs", ".sh"],
+    "comment_style": {
+        ".rs": {
+            "line_comment": "//"
+        },
+        ".sh": {
+            "line_comment": "#"
+        }
+    }
+}

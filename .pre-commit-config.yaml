@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: add-license-header
+        name: Add License Header
+        entry: python3 scripts/add_license_header.py
+        language: system
+        files: ^src/.*\.(rs|sh)$
+        pass_filenames: true
