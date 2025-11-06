@@ -39,7 +39,7 @@ async fn main() -> Result<()> {
     };
 
     println!("Starting MCP client...");
-    println!("Connecting to server at: {}", server_path);
+    println!("Connecting to server at: {server_path}");
 
     // Create client handler (() implements ClientHandler) and start the server as a child process
     let mut cmd = Command::new(server_path);
@@ -52,7 +52,7 @@ async fn main() -> Result<()> {
     // Initialize connection
     println!("\nConnected to server!");
     let server_info = service.peer_info();
-    println!("Server info: {:#?}\n", server_info);
+    println!("Server info: {server_info:#?}\n");
 
     // List available tools
     println!("Listing available tools...");
@@ -86,7 +86,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -111,7 +111,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();

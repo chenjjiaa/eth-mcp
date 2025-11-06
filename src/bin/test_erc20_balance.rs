@@ -31,7 +31,7 @@ async fn main() -> Result<()> {
     };
 
     println!("Testing ERC20 Token Balance Query");
-    println!("Starting server at: {}\n", server_path);
+    println!("Starting server at: {server_path}\n");
 
     // Create client and start the server as a child process
     let mut cmd = Command::new(server_path);
@@ -64,7 +64,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
 

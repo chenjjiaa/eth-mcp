@@ -29,7 +29,7 @@ async fn run_server(server: EthMcpServer, server_host: String, server_port: u16)
     // Determine transport mode: TCP if port is set, otherwise stdio
     if server_port > 0 {
         // TCP mode
-        let addr: SocketAddr = format!("{}:{}", server_host, server_port)
+        let addr: SocketAddr = format!("{server_host}:{server_port}")
             .parse()
             .context("Invalid server address")?;
 

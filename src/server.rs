@@ -104,9 +104,8 @@ impl EthMcpServer {
     ) -> Result<CallToolResult, McpError> {
         info!("get_balance called with params: {:?}", params.0);
         let input = params.0;
-        let wallet_address = Address::from_str(&input.wallet_address).map_err(|e| {
-            McpError::invalid_params(format!("Invalid wallet address: {}", e), None)
-        })?;
+        let wallet_address = Address::from_str(&input.wallet_address)
+            .map_err(|e| McpError::invalid_params(format!("Invalid wallet address: {e}"), None))?;
 
         info!(
             "Querying balance for wallet: {:?}, token: {:?}",
@@ -119,19 +118,19 @@ impl EthMcpServer {
             self.get_erc20_balance(wallet_address, token_address_str)
                 .await
                 .map_err(|e| {
-                    McpError::internal_error(format!("Failed to get ERC20 balance: {}", e), None)
+                    McpError::internal_error(format!("Failed to get ERC20 balance: {e}"), None)
                 })?
         } else {
             // Query ETH balance
             info!("Querying ETH balance");
             self.get_eth_balance(wallet_address).await.map_err(|e| {
-                McpError::internal_error(format!("Failed to get ETH balance: {}", e), None)
+                McpError::internal_error(format!("Failed to get ETH balance: {e}"), None)
             })?
         };
 
         info!("Balance query completed, serializing result");
         let json_result = serde_json::to_string_pretty(&result).map_err(|e| {
-            McpError::internal_error(format!("Error serializing result: {}", e), None)
+            McpError::internal_error(format!("Error serializing result: {e}"), None)
         })?;
 
         Ok(CallToolResult::success(vec![Content::text(json_result)]))
@@ -151,12 +150,12 @@ impl EthMcpServer {
         info!("Fetching price for token: {}", input.token);
 
         let result = self.fetch_token_price(&input.token).await.map_err(|e| {
-            McpError::internal_error(format!("Failed to get token price: {}", e), None)
+            McpError::internal_error(format!("Failed to get token price: {e}"), None)
         })?;
 
         info!("Price query completed, serializing result");
         let json_result = serde_json::to_string_pretty(&result).map_err(|e| {
-            McpError::internal_error(format!("Error serializing result: {}", e), None)
+            McpError::internal_error(format!("Error serializing result: {e}"), None)
         })?;
 
         Ok(CallToolResult::success(vec![Content::text(json_result)]))
@@ -176,13 +175,14 @@ impl EthMcpServer {
         );
 
         let provider = SwapProvider::new(self.provider.clone());
-        let result = provider.estimate_swap(input).await.map_err(|e| {
-            McpError::internal_error(format!("Failed to estimate swap: {}", e), None)
-        })?;
+        let result = provider
+            .estimate_swap(input)
+            .await
+            .map_err(|e| McpError::internal_error(format!("Failed to estimate swap: {e}"), None))?;
 
         info!("Swap simulation completed, serializing result");
         let json_result = serde_json::to_string_pretty(&result).map_err(|e| {
-            McpError::internal_error(format!("Error serializing result: {}", e), None)
+            McpError::internal_error(format!("Error serializing result: {e}"), None)
         })?;
 
         Ok(CallToolResult::success(vec![Content::text(json_result)]))
@@ -216,9 +216,8 @@ impl EthMcpServer {
         address: &str,
     ) -> Result<TokenPriceOutput> {
         let url = format!(
-            "https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses={}&vs_currencies=usd,eth",
-            address
-        );
+            "https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses={address}&vs_currencies=usd,eth"
+          );
 
         info!("Fetching price by address from CoinGecko: {}", url);
 
@@ -245,12 +244,12 @@ impl EthMcpServer {
         let price_usd = token_data
             .get("usd")
             .and_then(|v| v.as_f64())
-            .map(|v| format!("{:.6}", v));
+            .map(|v| format!("{v:.6}"));
 
         let price_eth = token_data
             .get("eth")
             .and_then(|v| v.as_f64())
-            .map(|v| format!("{:.18}", v));
+            .map(|v| format!("{v:.18}"));
 
         Ok(TokenPriceOutput {
             token: address.to_string(),
@@ -282,8 +281,7 @@ impl EthMcpServer {
         };
 
         let url = format!(
-            "https://api.coingecko.com/api/v3/simple/price?ids={}&vs_currencies=usd,eth",
-            coin_id
+            "https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd,eth"
         );
 
         info!("Fetching price by symbol from CoinGecko: {}", url);
@@ -311,12 +309,12 @@ impl EthMcpServer {
         let price_usd = token_data
             .get("usd")
             .and_then(|v| v.as_f64())
-            .map(|v| format!("{:.6}", v));
+            .map(|v| format!("{v:.6}"));
 
         let price_eth = token_data
             .get("eth")
             .and_then(|v| v.as_f64())
-            .map(|v| format!("{:.18}", v));
+            .map(|v| format!("{v:.18}"));
 
         Ok(TokenPriceOutput {
             token: symbol.to_string(),
@@ -355,7 +353,7 @@ impl EthMcpServer {
         let price_usd = token_data
             .get("usd")
             .and_then(|v| v.as_f64())
-            .map(|v| format!("{:.6}", v));
+            .map(|v| format!("{v:.6}"));
 
         Ok(TokenPriceOutput {
             token: "ETH".to_string(),
@@ -381,9 +379,9 @@ impl EthMcpServer {
             / Decimal::from(1_000_000_000_000_000_000u64);
 
         Ok(BalanceOutput {
-            wallet_address: format!("{:?}", address),
+            wallet_address: format!("{address:?}"),
             token_address: None,
-            balance: format!("{:.18}", eth_balance),
+            balance: format!("{eth_balance:.18}"),
             decimals: 18,
             raw_balance: balance.to_string(),
         })
@@ -402,6 +400,7 @@ impl EthMcpServer {
                 kind: ParamType::Uint(256),
                 internal_type: None,
             }],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         }
@@ -416,6 +415,7 @@ impl EthMcpServer {
                 kind: ParamType::Uint(8),
                 internal_type: None,
             }],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         }
@@ -485,10 +485,7 @@ impl EthMcpServer {
         let decimals_token = decimals_tokens.first().context("No decimals in result")?;
 
         let decimals = match decimals_token {
-            Token::Uint(val) => {
-                let d = val.to_string().parse::<u64>()? as u8;
-                d
-            }
+            Token::Uint(val) => val.to_string().parse::<u64>()? as u8,
             _ => anyhow::bail!("Unexpected decimals token type"),
         };
 
@@ -500,7 +497,7 @@ impl EthMcpServer {
             / divisor;
 
         Ok(BalanceOutput {
-            wallet_address: format!("{:?}", wallet_address),
+            wallet_address: format!("{wallet_address:?}"),
             token_address: Some(token_address_str),
             balance: format!("{:.prec$}", token_balance, prec = decimals_u32 as usize),
             decimals,

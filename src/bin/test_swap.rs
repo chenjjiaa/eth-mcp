@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
     };
 
     println!("Testing Uniswap V2 and V3 Swap Simulation");
-    println!("Starting server at: {}\n", server_path);
+    println!("Starting server at: {server_path}\n");
 
     let mut cmd = Command::new(server_path);
     cmd.stdin(std::process::Stdio::piped())
@@ -112,7 +112,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -149,7 +149,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -186,7 +186,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -228,7 +228,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -266,7 +266,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -304,7 +304,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();
@@ -340,7 +340,7 @@ async fn main() -> Result<()> {
             rmcp::model::RawContent::Text(text) => {
                 println!("{}", text.text);
             }
-            _ => println!("{:#?}", content),
+            _ => println!("{content:#?}"),
         }
     }
     println!();

@@ -32,15 +32,11 @@ pub const WETH_ADDRESS: &str = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, schemars::JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum UniswapVersion {
+    #[default]
     V2,
     V3,
-}
-
-impl Default for UniswapVersion {
-    fn default() -> Self {
-        UniswapVersion::V2
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, schemars::JsonSchema)]
@@ -273,7 +269,7 @@ impl SwapProvider {
             ),
             slippage_tolerance: input.slippage_tolerance,
             estimated_gas: gas_estimate.to_string(),
-            estimated_gas_eth: format!("{:.18}", gas_cost_eth),
+            estimated_gas_eth: format!("{gas_cost_eth:.18}"),
             price_impact: None,
             involves_eth: from_is_eth || to_is_eth,
             version: "V2".to_string(),
@@ -329,15 +325,6 @@ impl SwapProvider {
 
         let (swap_fn, call_data, _value) = if from_is_eth && !to_is_eth {
             prepare_v3_exact_input_single_native(
-                token_out,
-                pool_fee,
-                amount,
-                amount_out_min,
-                Address::zero(),
-            )?
-        } else if !from_is_eth && to_is_eth {
-            prepare_v3_exact_input_single(
-                token_in,
                 token_out,
                 pool_fee,
                 amount,
@@ -455,7 +442,7 @@ impl SwapProvider {
             ),
             slippage_tolerance: input.slippage_tolerance,
             estimated_gas: gas_estimate.to_string(),
-            estimated_gas_eth: format!("{:.18}", gas_cost_eth),
+            estimated_gas_eth: format!("{gas_cost_eth:.18}"),
             price_impact: None,
             involves_eth: from_is_eth || to_is_eth,
             version: "V3".to_string(),
@@ -524,6 +511,7 @@ impl SwapProvider {
                 kind: ParamType::Array(Box::new(ParamType::Uint(256))),
                 internal_type: None,
             }],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         };
@@ -564,7 +552,7 @@ impl SwapProvider {
         token_out: Address,
         fee: u32,
         amount_in: U256,
-        is_eth: bool,
+        _is_eth: bool,
     ) -> Result<U256> {
         // Try the specified fee first, then fallback to common fees if pool doesn't exist
         let fees_to_try = vec![fee, 3000, 500, 10000];
@@ -573,7 +561,7 @@ impl SwapProvider {
         for &try_fee in &fees_to_try {
             match self
                 .try_get_v3_expected_output_quoter_v2(
-                    token_in, token_out, try_fee, amount_in, is_eth,
+                    token_in, token_out, try_fee, amount_in, _is_eth,
                 )
                 .await
             {
@@ -598,7 +586,7 @@ impl SwapProvider {
         warn!("QuoterV2 failed for all fees, trying old Quoter as fallback");
         for &try_fee in &fees_to_try {
             match self
-                .try_get_v3_expected_output_quoter(token_in, token_out, try_fee, amount_in, is_eth)
+                .try_get_v3_expected_output_quoter(token_in, token_out, try_fee, amount_in, _is_eth)
                 .await
             {
                 Ok(result) => {
@@ -614,8 +602,7 @@ impl SwapProvider {
 
         Err(last_error.unwrap_or_else(|| {
             anyhow::anyhow!(
-                "Failed to get V3 quote with any fee tier or quoter (tried: {:?})",
-                fees_to_try
+                "Failed to get V3 quote with any fee tier or quoter (tried: {fees_to_try:?})"
             )
         }))
     }
@@ -626,7 +613,7 @@ impl SwapProvider {
         token_out: Address,
         fee: u32,
         amount_in: U256,
-        is_eth: bool,
+        _is_eth: bool,
     ) -> Result<U256> {
         let quoter_address = Address::from_str(UNISWAP_V3_QUOTER_V2)?;
 
@@ -665,6 +652,7 @@ impl SwapProvider {
                     internal_type: None,
                 },
             ],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         };
@@ -702,7 +690,7 @@ impl SwapProvider {
             .provider
             .call(&tx_request.into(), None)
             .await
-            .map_err(|e| anyhow::anyhow!("QuoterV2 call failed for fee {}: {}", fee, e))?;
+            .map_err(|e| anyhow::anyhow!("QuoterV2 call failed for fee {fee}: {e}"))?;
 
         let decoded = quote_exact_input_single_fn
             .decode_output(&result)
@@ -759,6 +747,7 @@ impl SwapProvider {
                 kind: ParamType::Uint(256),
                 internal_type: None,
             }],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         };
@@ -790,7 +779,7 @@ impl SwapProvider {
             .provider
             .call(&tx_request.into(), None)
             .await
-            .map_err(|e| anyhow::anyhow!("Old Quoter call failed for fee {}: {}", fee, e))?;
+            .map_err(|e| anyhow::anyhow!("Old Quoter call failed for fee {fee}: {e}"))?;
 
         let decoded = quote_exact_input_single_fn
             .decode_output(&result)
@@ -811,6 +800,7 @@ impl SwapProvider {
                 kind: ParamType::Uint(8),
                 internal_type: None,
             }],
+            #[allow(deprecated)]
             constant: None,
             state_mutability: StateMutability::View,
         };
@@ -848,7 +838,7 @@ fn normalize_token_address(token: &str) -> Result<String> {
     } else if token_lower.starts_with("0x") && token_lower.len() == 42 {
         Ok(token_lower)
     } else {
-        anyhow::bail!("Invalid token address or symbol: {}", token)
+        anyhow::bail!("Invalid token address or symbol: {token}")
     }
 }
 
@@ -941,6 +931,7 @@ fn prepare_v2_swap_exact_eth_for_tokens(
             kind: ParamType::Array(Box::new(ParamType::Uint(256))),
             internal_type: None,
         }],
+        #[allow(deprecated)]
         constant: None,
         state_mutability: StateMutability::Payable,
     };
@@ -999,6 +990,7 @@ fn prepare_v2_swap_exact_tokens_for_eth(
             kind: ParamType::Array(Box::new(ParamType::Uint(256))),
             internal_type: None,
         }],
+        #[allow(deprecated)]
         constant: None,
         state_mutability: StateMutability::NonPayable,
     };
@@ -1058,6 +1050,7 @@ fn prepare_v2_swap_exact_tokens_for_tokens(
             kind: ParamType::Array(Box::new(ParamType::Uint(256))),
             internal_type: None,
         }],
+        #[allow(deprecated)]
         constant: None,
         state_mutability: StateMutability::NonPayable,
     };
@@ -1122,6 +1115,7 @@ fn prepare_v3_exact_input_single(
             kind: ParamType::Uint(256),
             internal_type: None,
         }],
+        #[allow(deprecated)]
         constant: None,
         state_mutability: StateMutability::Payable,
     };
