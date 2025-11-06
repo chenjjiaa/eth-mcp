@@ -1,6 +1,52 @@
 [package]
 name = "eth-mcp"
 version = "0.1.0"
-edition = "2025"
+edition = "2021"
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
+
+[[bin]]
+name = "test_eth_balance"
+path = "src/bin/test_eth_balance.rs"
+
+[[bin]]
+name = "test_erc20_balance"
+path = "src/bin/test_erc20_balance.rs"
+
+[[bin]]
+name = "test_token_price"
+path = "src/bin/test_token_price.rs"
+
+[[bin]]
+name = "test_swap"
+path = "src/bin/test_swap.rs"
 
 [dependencies]
+tokio = { version = "1.0", features = ["full", "net"] }
+rmcp = { version = "0.8.3", features = ["server", "client", "transport-child-process"] }
+ethers = "1.0"
+# ABI encoding/decoding
+ethabi = "18.0"
+# JSON serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Schema generation for JSON (must match rmcp's version)
+schemars = "1.0"
+
+# Structured logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rust_decimal = { version = "1.33", features = ["serde-float"] }
+anyhow = "1.0"
+thiserror = "1.0"
+dotenv = "0.15"
+hex = "0.4"
+async-trait = "0.1"
+reqwest = { version = "0.11", features = ["json"] }
