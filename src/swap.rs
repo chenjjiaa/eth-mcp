@@ -170,7 +170,7 @@ impl SwapProvider {
         // Use a dummy address for simulation (eth_call doesn't require real balance)
         // Using a well-known address that likely has some balance for better simulation
         let dummy_from_address = Address::from_str("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")?;
-        
+
         let mut tx_request = TransactionRequest::new()
             .to(router_address)
             .from(dummy_from_address)
@@ -180,7 +180,8 @@ impl SwapProvider {
             tx_request = tx_request.value(amount);
         }
 
-        warn!("Simulating V2 swap: to={:?}, from={:?}, data_len={}, value={:?}", 
+        warn!(
+            "Simulating V2 swap: to={:?}, from={:?}, data_len={}, value={:?}",
             router_address,
             dummy_from_address,
             call_data.len(),
@@ -189,22 +190,22 @@ impl SwapProvider {
 
         // Try to simulate the swap, but if it fails (e.g., due to approval or balance checks),
         // fall back to using the expected output from getAmountsOut
-        let actual_output = match self
-            .provider
-            .call(&tx_request.clone().into(), None)
-            .await
-        {
-            Ok(call_result) => {
-                match decode_v2_swap_result(&swap_fn, &call_result) {
-                    Ok(output) => output,
-                    Err(e) => {
-                        warn!("Failed to decode V2 swap result: {}, using expected output", e);
-                        expected_output
-                    }
+        let actual_output = match self.provider.call(&tx_request.clone().into(), None).await {
+            Ok(call_result) => match decode_v2_swap_result(&swap_fn, &call_result) {
+                Ok(output) => output,
+                Err(e) => {
+                    warn!(
+                        "Failed to decode V2 swap result: {}, using expected output",
+                        e
+                    );
+                    expected_output
                 }
-            }
+            },
             Err(e) => {
-                warn!("V2 swap simulation call failed: {}, using expected output from getAmountsOut", e);
+                warn!(
+                    "V2 swap simulation call failed: {}, using expected output from getAmountsOut",
+                    e
+                );
                 // Use the expected output from getAmountsOut as fallback
                 expected_output
             }
@@ -219,7 +220,10 @@ impl SwapProvider {
         {
             Ok(gas) => gas,
             Err(e) => {
-                warn!("Failed to estimate gas for V2 swap: {}, using default gas estimate", e);
+                warn!(
+                    "Failed to estimate gas for V2 swap: {}, using default gas estimate",
+                    e
+                );
                 // Use default gas estimates for Uniswap V2 swaps
                 // V2 swaps typically use 100k-200k gas
                 U256::from(150_000u64)
@@ -307,7 +311,7 @@ impl SwapProvider {
         } else {
             Address::from_str(&from_token)?
         };
-        
+
         let token_out = if to_is_eth {
             Address::from_str(WETH_ADDRESS)?
         } else {
@@ -353,7 +357,7 @@ impl SwapProvider {
 
         // Use a dummy address for simulation (eth_call doesn't require real balance)
         let dummy_from_address = Address::from_str("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")?;
-        
+
         let mut tx_request = TransactionRequest::new()
             .to(router_address)
             .from(dummy_from_address)
@@ -363,29 +367,27 @@ impl SwapProvider {
             tx_request = tx_request.value(amount);
         }
 
-        warn!("Simulating V3 swap: to={:?}, from={:?}, data_len={}, value={:?}", 
+        warn!(
+            "Simulating V3 swap: to={:?}, from={:?}, data_len={}, value={:?}",
             router_address,
             dummy_from_address,
             call_data.len(),
             if from_is_eth { Some(amount) } else { None }
         );
-        
+
         // Try to simulate the swap, but if it fails (e.g., due to approval or balance checks),
         // fall back to using the expected output from quoteExactInputSingle
-        let actual_output = match self
-            .provider
-            .call(&tx_request.clone().into(), None)
-            .await
-        {
-            Ok(call_result) => {
-                match decode_v3_swap_result(&swap_fn, &call_result) {
-                    Ok(output) => output,
-                    Err(e) => {
-                        warn!("Failed to decode V3 swap result: {}, using expected output", e);
-                        expected_output
-                    }
+        let actual_output = match self.provider.call(&tx_request.clone().into(), None).await {
+            Ok(call_result) => match decode_v3_swap_result(&swap_fn, &call_result) {
+                Ok(output) => output,
+                Err(e) => {
+                    warn!(
+                        "Failed to decode V3 swap result: {}, using expected output",
+                        e
+                    );
+                    expected_output
                 }
-            }
+            },
             Err(e) => {
                 warn!("V3 swap simulation call failed: {}, using expected output from quoteExactInputSingle", e);
                 // Use the expected output from quoteExactInputSingle as fallback
@@ -402,7 +404,10 @@ impl SwapProvider {
         {
             Ok(gas) => gas,
             Err(e) => {
-                warn!("Failed to estimate gas for V3 swap: {}, using default gas estimate", e);
+                warn!(
+                    "Failed to estimate gas for V3 swap: {}, using default gas estimate",
+                    e
+                );
                 // Use default gas estimates for Uniswap V3 swaps
                 // V3 swaps typically use 150k-250k gas
                 U256::from(200_000u64)
@@ -563,16 +568,21 @@ impl SwapProvider {
     ) -> Result<U256> {
         // Try the specified fee first, then fallback to common fees if pool doesn't exist
         let fees_to_try = vec![fee, 3000, 500, 10000];
-        
+
         let mut last_error = None;
         for &try_fee in &fees_to_try {
             match self
-                .try_get_v3_expected_output_quoter_v2(token_in, token_out, try_fee, amount_in, is_eth)
+                .try_get_v3_expected_output_quoter_v2(
+                    token_in, token_out, try_fee, amount_in, is_eth,
+                )
                 .await
             {
                 Ok(result) => {
                     if try_fee != fee {
-                        warn!("Pool with fee {} not found, using fee {} instead", fee, try_fee);
+                        warn!(
+                            "Pool with fee {} not found, using fee {} instead",
+                            fee, try_fee
+                        );
                     }
                     return Ok(result);
                 }
@@ -583,7 +593,7 @@ impl SwapProvider {
                 }
             }
         }
-        
+
         // If QuoterV2 fails, try old Quoter as fallback
         warn!("QuoterV2 failed for all fees, trying old Quoter as fallback");
         for &try_fee in &fees_to_try {
@@ -601,9 +611,12 @@ impl SwapProvider {
                 }
             }
         }
-        
+
         Err(last_error.unwrap_or_else(|| {
-            anyhow::anyhow!("Failed to get V3 quote with any fee tier or quoter (tried: {:?})", fees_to_try)
+            anyhow::anyhow!(
+                "Failed to get V3 quote with any fee tier or quoter (tried: {:?})",
+                fees_to_try
+            )
         }))
     }
 
@@ -674,22 +687,22 @@ impl SwapProvider {
 
         // Use a dummy address for simulation (eth_call doesn't require real balance)
         let dummy_from_address = Address::from_str("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")?;
-        
+
         let tx_request = TransactionRequest::new()
             .to(quoter_address)
             .from(dummy_from_address)
             .data(input_data);
 
-        warn!("Calling V3 QuoterV2: token_in={:?}, token_out={:?}, fee={}, amount_in={}", 
-            actual_token_in, token_out, fee, amount_in);
+        warn!(
+            "Calling V3 QuoterV2: token_in={:?}, token_out={:?}, fee={}, amount_in={}",
+            actual_token_in, token_out, fee, amount_in
+        );
 
         let result = self
             .provider
             .call(&tx_request.into(), None)
             .await
-            .map_err(|e| {
-                anyhow::anyhow!("QuoterV2 call failed for fee {}: {}", fee, e)
-            })?;
+            .map_err(|e| anyhow::anyhow!("QuoterV2 call failed for fee {}: {}", fee, e))?;
 
         let decoded = quote_exact_input_single_fn
             .decode_output(&result)
@@ -762,22 +775,22 @@ impl SwapProvider {
             .context("Failed to encode quoteExactInputSingle call for old Quoter")?;
 
         let dummy_from_address = Address::from_str("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")?;
-        
+
         let tx_request = TransactionRequest::new()
             .to(quoter_address)
             .from(dummy_from_address)
             .data(input_data);
 
-        warn!("Calling old V3 Quoter: token_in={:?}, token_out={:?}, fee={}, amount_in={}", 
-            token_in, token_out, fee, amount_in);
+        warn!(
+            "Calling old V3 Quoter: token_in={:?}, token_out={:?}, fee={}, amount_in={}",
+            token_in, token_out, fee, amount_in
+        );
 
         let result = self
             .provider
             .call(&tx_request.into(), None)
             .await
-            .map_err(|e| {
-                anyhow::anyhow!("Old Quoter call failed for fee {}: {}", fee, e)
-            })?;
+            .map_err(|e| anyhow::anyhow!("Old Quoter call failed for fee {}: {}", fee, e))?;
 
         let decoded = quote_exact_input_single_fn
             .decode_output(&result)
@@ -843,21 +856,24 @@ fn parse_amount(amount_str: &str, decimals: u8) -> Result<U256> {
     let amount_decimal = Decimal::from_str(amount_str).context("Failed to parse amount")?;
     let divisor = Decimal::from(10u64.pow(u32::from(decimals)));
     let amount_units = amount_decimal * divisor;
-    
+
     // Convert Decimal to string without decimal point
     // Truncate to get integer part only, then convert to string
     let amount_units_truncated = amount_units.trunc();
     let amount_units_str = amount_units_truncated.to_string();
-    
+
     // Remove any decimal point that might still be present (e.g., "100.0")
     let amount_units_str = if amount_units_str.contains('.') {
-        amount_units_str.split('.').next().unwrap_or(&amount_units_str)
+        amount_units_str
+            .split('.')
+            .next()
+            .unwrap_or(&amount_units_str)
     } else {
         &amount_units_str
     };
-    
-    let amount_u256 = U256::from_dec_str(amount_units_str)
-        .context("Failed to convert amount to U256")?;
+
+    let amount_u256 =
+        U256::from_dec_str(amount_units_str).context("Failed to convert amount to U256")?;
     Ok(amount_u256)
 }
 
@@ -873,20 +889,20 @@ fn calculate_min_output(output: U256, slippage: Decimal) -> Result<U256> {
     let slippage_decimal = slippage / Decimal::from(100);
     let one_minus_slippage = Decimal::from(1) - slippage_decimal;
     let min_output_decimal = Decimal::from_str(&output.to_string())? * one_minus_slippage;
-    
+
     // Convert Decimal to string without decimal point
     let min_output_truncated = min_output_decimal.trunc();
     let min_output_str = min_output_truncated.to_string();
-    
+
     // Remove any decimal point that might still be present
     let min_output_str = if min_output_str.contains('.') {
         min_output_str.split('.').next().unwrap_or(&min_output_str)
     } else {
         &min_output_str
     };
-    
-    let min_output = U256::from_dec_str(min_output_str)
-        .context("Failed to convert min output to U256")?;
+
+    let min_output =
+        U256::from_dec_str(min_output_str).context("Failed to convert min output to U256")?;
     Ok(min_output)
 }
 
