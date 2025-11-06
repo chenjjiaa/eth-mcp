@@ -1,6 +1,19 @@
 # Ethereum Trading MCP Server
 
+<div align="center">
+
+[![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![Tokio](https://img.shields.io/badge/Tokio-000000?style=flat&logo=rust&logoColor=white)](https://tokio.rs/)
+[![Ethereum](https://img.shields.io/badge/Ethereum-3C3C3D?style=flat&logo=ethereum&logoColor=white)](https://ethereum.org/)
+[![Ethers.rs](https://img.shields.io/badge/Ethers.rs-627EEA?style=flat&logo=ethereum&logoColor=white)](https://github.com/gakonst/ethers-rs)
+[![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-000000?style=flat)](https://modelcontextprotocol.io/)
+[![Uniswap](https://img.shields.io/badge/Uniswap-FF007A?style=flat&logo=uniswap&logoColor=white)](https://uniswap.org/)
+
+</div>
+
 A Model Context Protocol (MCP) server implemented in Rust that enables AI agents to query Ethereum balances and simulate token swaps on Uniswap.
+
+**[Quick Start Guide](docs/quick-start.md)** - Get up and running quickly.
 
 ## Features
 
@@ -298,24 +311,12 @@ TOKEN_ADDRESS=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 
 ## TODO / Future Improvements
 
-[Future Improvements](https://github.com/chenjjiaa/eth-mcp/blob/main/docs/future-improvements.md)
+[Future Improvements](docs/future-improvements.md)
 
 ## Changelog
 
-[Changelog](https://github.com/chenjjiaa/eth-mcp/blob/main/docs/CHANGELOG.md)
+[Changelog](docs/CHANGELOG.md)
 
 ## License
 
-Copyright 2025 chenjjiaa
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+This project is licensed under the [Apache License 2.0](LICENSE).
